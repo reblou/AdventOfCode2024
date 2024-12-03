@@ -32,6 +32,8 @@ func daySelector(day int) {
 		days.One()
 	case 2:
 		days.Two()
+	case 3:
+		days.Three()
 	default:
 		fmt.Println("Unknown day argument")
 	}

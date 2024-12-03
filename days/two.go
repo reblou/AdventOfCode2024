@@ -92,8 +92,6 @@ func dampenerSafeReports(input [][]int) int {
 
 		if rowSafe {
 			safe += 1
-		} else {
-			fmt.Printf("%v not safe\n", report)
 		}
 	}
 
