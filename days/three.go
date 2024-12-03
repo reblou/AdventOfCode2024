@@ -64,32 +64,3 @@ func multStrings(a string, b string) int {
 
 	return ai * bi
 }
-
-func parse(input string) int {
-	/*
-		mul := "mul"
-		do := "do"
-		dont := "dont"
-		tokeni := 0
-		paren := false
-		numi := 0
-
-		token := ""
-		word := true
-
-		for i, char := range input {
-			if word && unicode.IsLetter(char) {
-				token += char
-			} else if unicode.IsDigit(char) {
-				word = false
-			} else {
-
-				//parse token and blank
-				token = ""
-				word = true
-			}
-
-		}
-	*/
-	return -1
-}

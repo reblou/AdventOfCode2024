@@ -127,8 +127,7 @@ func reportSafe(report []int) bool {
 }
 
 func trySafeAlternatives(report []int) bool {
-
-	for i, _ := range report {
+	for i := range report {
 		reportCopy := make([]int, len(report))
 		copy(reportCopy, report)
 
