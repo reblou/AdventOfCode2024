@@ -16,6 +16,7 @@ func Three() {
 	multTotal := multTotal(input3)
 	fmt.Printf("Mult total: %v\n", multTotal)
 
+	fmt.Printf("Conditional Mult total: %v\n", multTotalConditionals(input3))
 }
 
 func multTotal(input string) int {
@@ -35,5 +36,60 @@ func multTotal(input string) int {
 }
 
 func multTotalConditionals(input string) int {
+	re := regexp.MustCompile(`(mul)\((\d{1,3}),(\d{1,3})\)|(do)\(\)|(don't)\(\)`)
 
+	matches := re.FindAllStringSubmatch(input, -1)
+
+	do := true
+	multTotal := 0
+	for _, match := range matches {
+		switch match[0] {
+		case "don't()":
+			do = false
+		case "do()":
+			do = true
+		default:
+			if do {
+				multTotal += multStrings(match[2], match[3])
+			}
+		}
+	}
+
+	return multTotal
+}
+
+func multStrings(a string, b string) int {
+	ai, _ := strconv.Atoi(a)
+	bi, _ := strconv.Atoi(b)
+
+	return ai * bi
+}
+
+func parse(input string) int {
+	/*
+		mul := "mul"
+		do := "do"
+		dont := "dont"
+		tokeni := 0
+		paren := false
+		numi := 0
+
+		token := ""
+		word := true
+
+		for i, char := range input {
+			if word && unicode.IsLetter(char) {
+				token += char
+			} else if unicode.IsDigit(char) {
+				word = false
+			} else {
+
+				//parse token and blank
+				token = ""
+				word = true
+			}
+
+		}
+	*/
+	return -1
 }
