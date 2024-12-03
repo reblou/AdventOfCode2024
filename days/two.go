@@ -83,83 +83,17 @@ func dampenerSafeReports(input [][]int) int {
 	safe := 0
 
 	for _, report := range input {
-		increasing := true
+		rowSafe := reportSafe(report)
 
-		if report[0] > report[1] {
-			increasing = false
-		}
-
-		rowSafe := true
-		dampener := true
-
-		for i := 1; i < len(report); i++ {
-			diff := absDiff(report[i], report[i-1])
-
-			if diff == 0 {
-				if !dampener {
-					rowSafe = false
-					break
-				}
-				dampener = false
-				report[i] = report[i-1]
-			} else if increasing && report[i] <= report[i-1] {
-				if i < len(report)-2 && report[i] >= report[i+1] {
-					//pretend i-1 replaced
-					dampener = false
-					increasing = !increasing
-					continue
-				} else if i < len(report)-2 && report[i-1] == report[i+1] {
-					// replace report[i-1] instead
-					dampener = false
-					continue
-				}
-
-				report[i] = report[i-1]
-
-				if !dampener {
-					rowSafe = false
-					break
-				}
-				dampener = false
-			} else if !increasing && report[i] >= report[i-1] {
-				if i < len(report)-2 && report[i] <= report[i+1] {
-					//pretend i-1 replaced
-					dampener = false
-					increasing = !increasing
-					continue
-				} else if i < len(report)-2 && report[i-1] == report[i+1] {
-					// replace report[i-1] instead
-					dampener = false
-					continue
-				}
-
-				report[i] = report[i-1]
-				if !dampener {
-					rowSafe = false
-					break
-				}
-
-				dampener = false
-			} else if diff > 3 {
-				if !dampener {
-					rowSafe = false
-					break
-				}
-
-				// removing just i will never create a safe report, unless it's last in report
-				// "remove" i-1 need to check i-2
-				if i >= 2 && i != len(report)-1 {
-					report[i-1] = report[i-2]
-					i -= 1
-				}
-				dampener = false
-			}
+		if !rowSafe {
+			// loop and try removing all rows to find a safe iteration
+			rowSafe = trySafeAlternatives(report)
 		}
 
 		if rowSafe {
 			safe += 1
 		} else {
-			fmt.Printf("%v\n", report)
+			fmt.Printf("%v not safe\n", report)
 		}
 	}
 
@@ -173,4 +107,37 @@ func absDiff(a int, b int) int {
 	}
 
 	return diff
+}
+
+func reportSafe(report []int) bool {
+	increasing := true
+
+	if report[0] > report[1] {
+		increasing = false
+	}
+
+	for i := 1; i < len(report); i++ {
+		diff := absDiff(report[i], report[i-1])
+
+		if (diff < 1 || diff > 3) ||
+			(increasing && report[i] <= report[i-1]) ||
+			(!increasing && report[i] >= report[i-1]) {
+			return false
+		}
+	}
+	return true
+}
+
+func trySafeAlternatives(report []int) bool {
+
+	for i, _ := range report {
+		reportCopy := make([]int, len(report))
+		copy(reportCopy, report)
+
+		newReport := append(reportCopy[:i], reportCopy[i+1:]...)
+		if reportSafe(newReport) {
+			return true
+		}
+	}
+	return false
 }
