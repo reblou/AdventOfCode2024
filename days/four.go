@@ -9,35 +9,28 @@ import (
 //go:embed inputs/four
 var input4 string
 
-var debug = "MMMSXXMASM\r\nMSAMXMSMSA\r\nAMXSXMAAMM\r\nMSAMASMSMX\r\nXMASAMXAMM\r\nXXAMMXXAMA\r\nSMSMSASXSS\r\nSAXAMASAAA\r\nMAMMMXMMMM\r\nMXMXAXMASX"
-
 func Four() {
 	fmt.Println("-Day Four-")
 
 	count := countMultDirectionalXmas(input4)
-	fmt.Printf("Total: %v\n", count)
+	fmt.Printf("Xmas Total: %v\n", count)
+
+	count2 := countCrossMas(input4)
+	fmt.Printf("X-Mas Total: %v\n", count2)
 }
 
 func countMultDirectionalXmas(input string) int {
 	count := 0
 
-	lr := countXmas(input)
-	fmt.Printf("LR Count: %v\n", lr)
-	count += lr
+	count += countXmas(input)
 
 	manip := manipulateInput(input)
 
-	v := countXmas(manip[0])
-	count += v
-	fmt.Printf("Vert Count: %v\n", v)
+	count += countXmas(manip[0])
 
-	dlr := countXmas(manip[1])
-	count += dlr
-	fmt.Printf("DiagLR Count: %v\n", dlr)
+	count += countXmas(manip[1])
 
-	drl := countXmas(manip[2])
-	count += drl
-	fmt.Printf("DiagRL Count: %v\n", drl)
+	count += countXmas(manip[2])
 	return count
 }
 
@@ -134,4 +127,35 @@ func countXmas(input string) int {
 	r := strings.Count(input, "SAMX")
 
 	return l + r
+}
+
+func countCrossMas(input string) int {
+	lines := strings.Split(input, "\r\n")
+
+	var count int
+	for y, line := range lines {
+		n := len(line)
+		for x, char := range line {
+			if char != 'A' {
+				continue
+			}
+
+			if masCheck(lines, x, y, n) {
+				count += 1
+			}
+		}
+	}
+	return count
+}
+
+func masCheck(lines []string, x int, y int, lineLen int) bool {
+	if x <= 0 || y <= 0 || y >= len(lines)-1 || x >= lineLen-1 {
+		return false
+	}
+
+	lr := string(lines[y-1][x-1]) + string(lines[y][x]) + string(lines[y+1][x+1])
+
+	rl := string(lines[y-1][x+1]) + string(lines[y][x]) + string(lines[y+1][x-1])
+
+	return (lr == "MAS" || lr == "SAM") && (rl == "MAS" || rl == "SAM")
 }
