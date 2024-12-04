@@ -9,10 +9,10 @@ import (
 //go:embed inputs/four
 var input4 string
 
+var debug = "MMMSXXMASM\r\nMSAMXMSMSA\r\nAMXSXMAAMM\r\nMSAMASMSMX\r\nXMASAMXAMM\r\nXXAMMXXAMA\r\nSMSMSASXSS\r\nSAXAMASAAA\r\nMAMMMXMMMM\r\nMXMXAXMASX"
+
 func Four() {
 	fmt.Println("-Day Four-")
-
-	// TODO: ans 2471 too high
 
 	count := countMultDirectionalXmas(input4)
 	fmt.Printf("Total: %v\n", count)
@@ -27,17 +27,14 @@ func countMultDirectionalXmas(input string) int {
 
 	manip := manipulateInput(input)
 
-	//fmt.Printf("Vert:\n%v\n", manip[0])
 	v := countXmas(manip[0])
 	count += v
 	fmt.Printf("Vert Count: %v\n", v)
 
-	//fmt.Printf("DiagLR:\n%v\n", manip[1])
 	dlr := countXmas(manip[1])
 	count += dlr
 	fmt.Printf("DiagLR Count: %v\n", dlr)
 
-	fmt.Printf("DiagRL: %v\n", manip[2])
 	drl := countXmas(manip[2])
 	count += drl
 	fmt.Printf("DiagRL Count: %v\n", drl)
@@ -52,8 +49,7 @@ func manipulateInput(input string) []string {
 
 	verts := transformVertical(lines, lineLen, n)
 	diagslr := transformDiag(lines, lineLen, n)
-	//TODO: write metdod to transform diag r-l also
-	diagsrl := transformDiag(lines, n, lineLen)
+	diagsrl := transformDiagRL(lines, n, lineLen)
 
 	output := []string{
 		verts,
@@ -79,7 +75,6 @@ func transformVertical(lines []string, lineLen int, lineCount int) string {
 
 func transformDiag(lines []string, lineLen int, lineCount int) string {
 	var output string
-	//todo transform other way round
 
 	for y := lineCount - 1; y >= 0; y-- {
 
@@ -97,6 +92,34 @@ func transformDiag(lines []string, lineLen int, lineCount int) string {
 		y := 0
 		output += string(lines[y][x])
 		for nx := x + 1; nx < lineCount; nx++ {
+			y++
+			output += string(lines[y][nx])
+		}
+		output += "."
+	}
+
+	return output
+}
+
+func transformDiagRL(lines []string, lineLen int, lineCount int) string {
+	var output string
+
+	for y := lineCount - 1; y >= 0; y-- {
+
+		x := lineLen - 1
+		output += string(lines[y][x])
+		for ny := y + 1; ny < lineCount; ny++ {
+			x--
+			output += string(lines[ny][x])
+		}
+		output += "."
+	}
+	output += "\r\n"
+
+	for x := 0; x < lineLen-1; x++ {
+		y := 0
+		output += string(lines[y][x])
+		for nx := x - 1; nx >= 0; nx-- {
 			y++
 			output += string(lines[y][nx])
 		}
