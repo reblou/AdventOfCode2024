@@ -38,6 +38,8 @@ func daySelector(day int) {
 		days.Four()
 	case 5:
 		days.Five()
+	case 6:
+		days.Six()
 	default:
 		fmt.Println("Unknown day argument")
 	}
