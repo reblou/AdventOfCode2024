@@ -37,7 +37,7 @@ func Nine() {
 func calcChecksum(input string) int {
 	defragged := defragFromEncoding(input)
 
-	fmt.Printf("Defragged: %v\n", defragged)
+	// fmt.Printf("Defragged: %v\n", defragged)
 	return calculateCheckSum(defragged)
 }
 
@@ -91,7 +91,12 @@ func defragFromEncoding(input string) []int {
 }
 
 func calculateCheckSum(defragged []int) int {
-	return -1
+	var checksum int
+
+	for i, n := range defragged {
+		checksum += i * n
+	}
+	return checksum
 }
 
 func strToInt(s string) int {
