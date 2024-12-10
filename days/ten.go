@@ -50,7 +50,8 @@ func countTrailheads(m [][]int) int {
 		for x := range m[y] {
 			if m[y][x] == 0 {
 				//check for trails
-				trailScore := checkTrailHead(m, x, y, 0)
+				peaksSeen := make(map[string]bool)
+				trailScore := checkTrailHead(m, x, y, 0, peaksSeen)
 				trailHeadScoreSum += trailScore
 			}
 		}
@@ -59,10 +60,16 @@ func countTrailheads(m [][]int) int {
 	return trailHeadScoreSum
 }
 
-func checkTrailHead(m [][]int, x int, y int, level int) int {
+func checkTrailHead(m [][]int, x int, y int, level int, peaksSeen map[string]bool) int {
 	if level == 9 {
 		// end of trail
-		return 1
+		c := coord{x, y}
+		if peaksSeen[c.GetHashKey()] {
+			return 0
+		} else {
+			peaksSeen[c.GetHashKey()] = true
+			return 1
+		}
 	}
 
 	next := level + 1
@@ -79,7 +86,7 @@ func checkTrailHead(m [][]int, x int, y int, level int) int {
 		}
 
 		if m[ny][nx] == next {
-			count += checkTrailHead(m, nx, ny, next)
+			count += checkTrailHead(m, nx, ny, next, peaksSeen)
 		}
 	}
 
