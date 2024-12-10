@@ -15,7 +15,8 @@ func Ten() {
 
 	topMap := parseInput2dIntSlice(input10)
 
-	fmt.Printf("Trailhead sum: %v\n", countTrailheads(topMap))
+	fmt.Printf("Trailhead sum: %v\n", countTrailheads(topMap, false))
+	fmt.Printf("Distinct Trailhead sum: %v\n", countTrailheads(topMap, true))
 }
 
 func parseInput2dIntSlice(input string) [][]int {
@@ -43,7 +44,7 @@ func parseInput2dIntSlice(input string) [][]int {
 	return output
 }
 
-func countTrailheads(m [][]int) int {
+func countTrailheads(m [][]int, distinct bool) int {
 	trailHeadScoreSum := 0
 
 	for y := range m {
@@ -51,7 +52,7 @@ func countTrailheads(m [][]int) int {
 			if m[y][x] == 0 {
 				//check for trails
 				peaksSeen := make(map[string]bool)
-				trailScore := checkTrailHead(m, x, y, 0, peaksSeen)
+				trailScore := checkTrailHead(m, x, y, 0, peaksSeen, distinct)
 				trailHeadScoreSum += trailScore
 			}
 		}
@@ -60,8 +61,11 @@ func countTrailheads(m [][]int) int {
 	return trailHeadScoreSum
 }
 
-func checkTrailHead(m [][]int, x int, y int, level int, peaksSeen map[string]bool) int {
+func checkTrailHead(m [][]int, x int, y int, level int, peaksSeen map[string]bool, distinct bool) int {
 	if level == 9 {
+		if distinct {
+			return 1
+		}
 		// end of trail
 		c := coord{x, y}
 		if peaksSeen[c.GetHashKey()] {
@@ -86,7 +90,7 @@ func checkTrailHead(m [][]int, x int, y int, level int, peaksSeen map[string]boo
 		}
 
 		if m[ny][nx] == next {
-			count += checkTrailHead(m, nx, ny, next, peaksSeen)
+			count += checkTrailHead(m, nx, ny, next, peaksSeen, distinct)
 		}
 	}
 
