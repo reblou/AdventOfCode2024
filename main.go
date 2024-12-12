@@ -50,6 +50,8 @@ func daySelector(day int) {
 		days.Ten()
 	case 11:
 		days.Eleven()
+	case 12:
+		days.Twelve()
 	default:
 		fmt.Println("Unknown day argument")
 	}
