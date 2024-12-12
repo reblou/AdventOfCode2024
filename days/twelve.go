@@ -18,7 +18,8 @@ func Twelve() {
 func totalPermiter(garden [][]string) int {
 	seen := make(map[string]bool)
 
-	var patches []map[string]coord
+	var total int
+	var regions []map[string]coord
 	for y, _ := range garden {
 		for x, _ := range garden[y] {
 			c := coord{x, y}
@@ -27,17 +28,21 @@ func totalPermiter(garden [][]string) int {
 			}
 
 			// else calculate full area
-			patch := make(map[string]coord)
-			findPatch(garden, c, seen, patch)
+			region := make(map[string]coord)
+			findPatch(garden, c, seen, region)
 			// add patch to list
-			patches = append(patches, patch)
-			fmt.Printf("Patch: %v\n", patch)
+			regions = append(regions, region)
 		}
 	}
 
 	// TODO : foreach region, find perimiter and * area, add to total
+	for _, region := range regions {
+		perimeter := calcPerimeter(region)
 
-	return -1
+		total += len(region) * perimeter
+	}
+
+	return total
 }
 
 func findPatch(garden [][]string, c coord, seen map[string]bool, patch map[string]coord) {
@@ -47,10 +52,10 @@ func findPatch(garden [][]string, c coord, seen map[string]bool, patch map[strin
 	// search all directions for matching
 	veg := garden[c.y][c.x]
 	dirs := []coord{
-		coord{1, 0},
-		coord{0, 1},
-		coord{-1, 0},
-		coord{0, -1},
+		{1, 0},
+		{0, 1},
+		{-1, 0},
+		{0, -1},
 	}
 
 	for _, dir := range dirs {
@@ -67,4 +72,28 @@ func findPatch(garden [][]string, c coord, seen map[string]bool, patch map[strin
 			findPatch(garden, search, seen, patch)
 		}
 	}
+}
+
+func calcPerimeter(region map[string]coord) int {
+	var perimeter int
+
+	dirs := []coord{
+		{1, 0},
+		{0, 1},
+		{-1, 0},
+		{0, -1},
+	}
+	for _, c := range region {
+		// check surroundings, if also in patch, don't add perimeter
+		for _, dir := range dirs {
+			search := coord{c.x + dir.x, c.y + dir.y}
+			_, inRegion := region[search.GetHashKey()]
+
+			if !inRegion {
+				perimeter += 1
+			}
+		}
+	}
+
+	return perimeter
 }
