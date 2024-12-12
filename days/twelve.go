@@ -3,6 +3,7 @@ package days
 import (
 	_ "embed"
 	"fmt"
+	"sort"
 )
 
 //go:embed inputs/twelve
@@ -12,10 +13,11 @@ func Twelve() {
 	fmt.Println("-Day 12-")
 
 	garden := parseInput6(input12)
-	fmt.Printf("Total Perimeter: %v\n", totalPermiter(garden))
+	fmt.Printf("Total Perimeter: %v\n", totalPermiter(garden, false))
+	fmt.Printf("Total Discount Perimeter: %v\n", totalPermiter(garden, true))
 }
 
-func totalPermiter(garden [][]string) int {
+func totalPermiter(garden [][]string, discount bool) int {
 	seen := make(map[string]bool)
 
 	var total int
@@ -35,11 +37,15 @@ func totalPermiter(garden [][]string) int {
 		}
 	}
 
-	// TODO : foreach region, find perimiter and * area, add to total
+	// foreach region, find perimiter and * area, add to total
 	for _, region := range regions {
-		perimeter := calcPerimeter(region)
-
-		total += len(region) * perimeter
+		if discount {
+			sides := calcSides(region)
+			total += len(region) * sides
+		} else {
+			perimeter := calcPerimeter(region)
+			total += len(region) * perimeter
+		}
 	}
 
 	return total
@@ -96,4 +102,65 @@ func calcPerimeter(region map[string]coord) int {
 	}
 
 	return perimeter
+}
+
+func calcSides(region map[string]coord) int {
+	yAxisSides := make(map[int][]int)
+	xAxisSides := make(map[int][]int)
+
+	xdirs := []coord{
+		{1, 0},
+		{-1, 0},
+	}
+	ydirs := []coord{
+		{0, 1},
+		{0, -1},
+	}
+	for _, c := range region {
+		for _, xdir := range xdirs {
+			search := coord{c.x + xdir.x, c.y + xdir.y}
+			_, inRegion := region[search.GetHashKey()]
+
+			if !inRegion {
+				sideI := c.x * 2
+				if (xdir.x) > 0 {
+					sideI += xdir.x
+				}
+				yAxisSides[sideI] = append(yAxisSides[sideI], c.y)
+			}
+		}
+		for _, ydir := range ydirs {
+			search := coord{c.x + ydir.x, c.y + ydir.y}
+			_, inRegion := region[search.GetHashKey()]
+
+			if !inRegion {
+				sideI := c.y * 2
+				if (ydir.y) > 0 {
+					sideI += ydir.y
+				}
+				xAxisSides[sideI] = append(xAxisSides[sideI], c.x)
+			}
+		}
+	}
+
+	return numSides(yAxisSides) + numSides(xAxisSides)
+}
+
+func numSides(sides map[int][]int) int {
+	var sum int
+	for _, side := range sides {
+		sum++
+		// if numbers are continuous, 1 side, else foreach gap +1
+		// sort ascending order
+		sort.Slice(side, func(a, b int) bool {
+			return side[a] < side[b]
+		})
+		for i := 0; i < len(side)-1; i++ {
+			// if gap bigger than 1, new side
+			if side[i+1]-side[i] > 1 {
+				sum++
+			}
+		}
+	}
+	return sum
 }
