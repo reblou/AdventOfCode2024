@@ -20,11 +20,13 @@ var input13 string
 func Thirteen() {
 	fmt.Println("-Day 13-")
 
-	fmt.Printf("Min total tokens: %v\n", lowestTotalTokens(parseInput13(input13, false)))
-	fmt.Printf("Min total tokens, conversion: %v\n", lowestTotalTokens(parseInput13(input13, true)))
+	machines := parseInput13(input13)
+	fmt.Printf("Min total tokens: %v\n", lowestTotalTokens(machines))
+
+	fmt.Printf("Min total tokens 2: %v\n", lowestTokensConversion(machines))
 }
 
-func parseInput13(input string, conversion bool) []clawmachine {
+func parseInput13(input string) []clawmachine {
 	var output []clawmachine
 
 	lines := strings.Split(input, "\r\n")
@@ -50,10 +52,6 @@ func parseInput13(input string, conversion bool) []clawmachine {
 		} else if strings.Contains(line, "Prize") {
 			claw.prize.x = a
 			claw.prize.y = b
-			if conversion {
-				claw.prize.x += 10000000000000
-				claw.prize.y += 10000000000000
-			}
 		} else {
 			panic("invalid line contents")
 		}
@@ -96,6 +94,26 @@ func lowestTokens(a coord, b coord, prize coord) int {
 	return lowest
 }
 
-func lowestCommonDenominator(a, b, c, d int) int {
-	return ((a * b * d) + (c * c)) / (b * b * c * d)
+func lowestTokensConversion(input []clawmachine) int {
+	var total int
+	for _, machine := range input {
+		machine.prize.x += 10000000000000
+		machine.prize.y += 10000000000000
+
+		total += cost(machine)
+	}
+
+	return total
+}
+
+func cost(m clawmachine) int {
+	ca := float64(m.prize.x*m.B.y-(m.prize.y*m.B.x)) / float64((m.A.x*m.B.y)-(m.A.y*m.B.x))
+
+	cb := (float64(m.prize.x) - float64(m.A.x)*ca) / float64(m.B.x)
+
+	if ca == float64(int64(ca)) && cb == float64(int64(cb)) {
+		return (3*int(ca) + int(cb))
+	} else {
+		return 0
+	}
 }
