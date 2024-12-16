@@ -3,6 +3,7 @@ package days
 import (
 	_ "embed"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -22,7 +23,21 @@ func Fourteen() {
 	guards := parseInput14(input14)
 
 	fmt.Printf("Score: %v\n", minSafetyScore(guards, 101, 103, 100))
-	// fmt.Printf("Score: %v\n", minSafetyScore(guards, 11, 7, 100))
+
+	min := math.Inf(1)
+	minI := 0
+	ss := make([]coord, 101*103*10)
+	for s := range 101 * 103 {
+		score := minSafetyScore(guards, 101, 103, s)
+
+		if float64(score) < min {
+			min = float64(score)
+			minI = s
+		}
+		ss[s] = coord{score, s}
+	}
+
+	fmt.Printf("Easter Egg i : %v\n", minI)
 }
 
 func parseInput14(input string) []guard {
@@ -64,6 +79,8 @@ func minSafetyScore(guards []guard, w int, l int, s int) int {
 		if y != -1 && x != -1 {
 			quads[y][x]++
 		}
+		// guards[i].p.x = newp.x
+		// guards[i].p.y = newp.y
 	}
 
 	safety := 1
