@@ -12,7 +12,7 @@ var input12 string
 func Twelve() {
 	fmt.Println("-Day 12-")
 
-	garden := parseInput6(input12)
+	garden := parseInput2dStrSlice(input12)
 	fmt.Printf("Total Perimeter: %v\n", totalPermiter(garden, false))
 	fmt.Printf("Total Discount Perimeter: %v\n", totalPermiter(garden, true))
 }

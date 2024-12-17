@@ -56,6 +56,8 @@ func daySelector(day int) {
 		days.Thirteen()
 	case 14:
 		days.Fourteen()
+	case 15:
+		days.Fifteen()
 	default:
 		fmt.Println("Unknown day argument")
 	}
