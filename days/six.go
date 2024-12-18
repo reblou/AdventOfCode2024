@@ -26,10 +26,10 @@ func Six() {
 	guardPath := makeGuardPath(input6)
 	fmt.Printf("Part 1: %v\n", countXs(guardPath))
 
-	fmt.Printf("Part 2: %v\n", countLoopObsticles(parseInput6(input6), guardPath))
+	fmt.Printf("Part 2: %v\n", countLoopObsticles(parseInput2dStrSlice(input6), guardPath))
 }
 
-func parseInput6(input string) [][]string {
+func parseInput2dStrSlice(input string) [][]string {
 	lines := strings.Split(input, "\r\n")
 
 	var output [][]string
@@ -56,7 +56,7 @@ func printOutput(input [][]string) {
 }
 
 func makeGuardPath(input string) [][]string {
-	parsed := parseInput6(input6)
+	parsed := parseInput2dStrSlice(input6)
 	guardPos := getGuardPosition(parsed)
 
 	guardMoveVector := coord{0, -1}

@@ -16,7 +16,7 @@ var input8 string
 func Eight() {
 	fmt.Println("-Day 8-")
 
-	inputParsed := parseInput6(input8)
+	inputParsed := parseInput2dStrSlice(input8)
 
 	fmt.Printf("Unique Antinodes: %v\n", uniqueAntinodes(inputParsed))
 	fmt.Printf("Part 2: %v\n", uniqueAntinodesResHarmonics(inputParsed))
