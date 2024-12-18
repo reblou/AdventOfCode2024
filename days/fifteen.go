@@ -77,22 +77,6 @@ func moveRobot(r coord, g [][]string, d coord) coord {
 		g[n.y][n.x] = g[r.y][r.x]
 		g[r.y][r.x] = "."
 		return n
-	case "[":
-		free := moveBigBoxes(n, coord{n.x + 1, n.y}, g, d)
-		if !free {
-			return r
-		}
-		g[n.y][n.x] = g[r.y][r.x]
-		g[r.y][r.x] = "."
-		return n
-	case "]":
-		free := moveBigBoxes(coord{n.x - 1, n.y}, n, g, d)
-		if !free {
-			return r
-		}
-		g[n.y][n.x] = g[r.y][r.x]
-		g[r.y][r.x] = "."
-		return n
 	case "O":
 		free := moveBoxes(n, g, d)
 		if free {
@@ -102,9 +86,47 @@ func moveRobot(r coord, g [][]string, d coord) coord {
 		} else {
 			return r
 		}
-	default:
-		panic("unkown obsticle")
 	}
+
+	if g[n.y][n.x] == "[" || g[n.y][n.x] == "]" {
+		if d.x != 0 {
+			// reuse old move on horiz axis
+			free := moveBoxes(n, g, d)
+			if !free {
+				return r
+			}
+			g[n.y][n.x] = g[r.y][r.x]
+			g[r.y][r.x] = "."
+			return n
+		} else {
+			// else moving[b.y][b.x+1]g vertically, need extra logic
+			b := n
+			if g[n.y][n.x] == "]" {
+				b = coord{n.x - 1, n.y}
+			}
+			stack := make([]coord, 0)
+			free := moveBigBoxes(b, g, d, &stack)
+			if !free {
+				return r
+			}
+			// remove duplicates that could occur from a box being pushed twice
+			stack = removeDupeBoxes(stack)
+			// go through stack and move
+			for _, b := range stack {
+				g[b.y+d.y][b.x+d.x] = g[b.y][b.x]
+				g[b.y+d.y][b.x+d.x+1] = g[b.y][b.x+1]
+				g[b.y][b.x] = "."
+				g[b.y][b.x+1] = "."
+			}
+
+			g[n.y][n.x] = g[r.y][r.x]
+			g[r.y][r.x] = "."
+			return n
+
+		}
+	}
+
+	panic("unknown obsticle")
 }
 
 func moveBoxes(b coord, g [][]string, d coord) bool {
@@ -137,69 +159,64 @@ func moveBoxes(b coord, g [][]string, d coord) bool {
 	}
 }
 
-func moveBigBoxes(l coord, r coord, g [][]string, d coord) bool {
+func moveBigBoxes(l coord, g [][]string, d coord, stack *[]coord) bool {
 	nl := coord{l.x + d.x, l.y + d.y}
-	nr := coord{r.x + d.x, r.y + d.y}
-	if d.x != 0 {
-		// reuse old move on horiz axis
-		var f coord
-		if d.x == 1 {
-			f = l
-		} else {
-			f = r
-		}
-		return moveBoxes(f, g, d)
-	}
-
-	// rest for vert axis only
+	nr := coord{l.x + d.x + 1, l.y + d.y}
 
 	if !inBounds(nl, len(g[0]), len(g)) || !inBounds(nr, len(g[0]), len(g)) || g[nl.y][nl.x] == "#" || g[nr.y][nr.x] == "#" {
 		return false
 	}
 
-	// only move if both left and right free
-	// this only works on vert axis, for horiz one of these will be the other part of the box
-	// TODO: bug here where we're duplicating boxes
 	if g[nl.y][nl.x] == "." && g[nr.y][nr.x] == "." {
-		g[nl.y][nl.x] = g[l.y][l.x]
-		g[nr.y][nr.x] = g[r.y][r.x]
+		*stack = append(*stack, l)
 		return true
 	}
 
-	// TODO: left move makes right blocked when it otherwise wouldn't be
-	var lfree bool
-	switch g[nl.y][nl.x] {
-	case "]":
-		lfree = moveBigBoxes(coord{nl.x - 1, nl.y}, nl, g, d)
-	case "[":
-		lfree = moveBigBoxes(nl, coord{nl.x + 1, nl.y}, g, d)
+	if g[nl.y][nl.x] == "[" {
+		// box directly above us, don't need to check alternatives
+		free := moveBigBoxes(nl, g, d, stack)
+		if !free {
+			return false
+		}
+
+		*stack = append(*stack, l)
+		return true
 	}
 
-	var rfree bool
-	switch g[nr.y][nr.x] {
-	case "]":
-		rfree = moveBigBoxes(coord{nr.x - 1, nr.y}, nr, g, d)
-	case "[":
-		rfree = moveBigBoxes(nr, coord{nr.x + 1, nr.y}, g, d)
+	lfree := true
+	rfree := true
+	if g[nl.y][nl.x] == "]" {
+		// box to the left,
+		lfree = moveBigBoxes(coord{nl.x - 1, nl.y}, g, d, stack)
+	}
+
+	if g[nr.y][nr.x] == "[" {
+		// box ofset right
+		rfree = moveBigBoxes(nr, g, d, stack)
 	}
 
 	if !lfree || !rfree {
+		// if either side has blockers
 		return false
 	}
 
-	g[nl.y][nl.x] = g[l.y][l.x]
-	g[nr.y][nr.x] = g[r.y][r.x]
+	*stack = append(*stack, l)
 	return true
 }
 
 func printGrid(g [][]string) {
+	var boxes int
 	fmt.Println()
 	for y := range g {
 		for x := range g[y] {
+			if g[y][x] == "O" || g[y][x] == "[" {
+				boxes++
+			}
 			fmt.Print(g[y][x])
 		}
 		fmt.Print("\r\n")
 	}
+	fmt.Printf("--%v boxes--\n", boxes)
 	fmt.Println()
 }
 
@@ -216,25 +233,34 @@ func calcGPS(g [][]string) int {
 	return sum
 }
 
+func calcBigGPS(g [][]string) int {
+	var sum int
+	for y := range g {
+		for x := range g[y] {
+			if g[y][x] != "[" {
+				continue
+			}
+			sum += 100*y + x
+		}
+	}
+	return sum
+}
+
 func biggerGpsSum(grid string, moves string) int {
 	g := parseInput2dStrSlice(grid)
 	g = embiggenGrid(g)
-	printGrid(g)
 	robot := FindRobot(g)
 
 	for _, m := range moves {
 		dir, err := moveToCoord(string(m))
 		if err != nil {
+			// non directional character, newline etc.
 			continue
 		}
 		robot = moveRobot(robot, g, dir)
-		printGrid(g)
 	}
 
-	// calc new gps score
-	printGrid(g)
-
-	return -1
+	return calcBigGPS(g)
 }
 
 func embiggenGrid(g [][]string) [][]string {
@@ -285,4 +311,20 @@ func moveToCoord(m string) (coord, error) {
 		return dir, errors.New("invalid move")
 	}
 	return dir, nil
+}
+
+func removeDupeBoxes(stack []coord) []coord {
+	var out []coord
+	seen := make(map[string]bool)
+
+	for _, s := range stack {
+		if seen[s.GetHashKey()] {
+			continue
+		}
+
+		seen[s.GetHashKey()] = true
+		out = append(out, s)
+	}
+
+	return out
 }
